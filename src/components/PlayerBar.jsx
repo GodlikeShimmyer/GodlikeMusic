@@ -1,78 +1,41 @@
-import React, { useRef, useEffect, useState } from "react";
-import YouTubePlayer from "@/components/YouTubePlayer";
-import { Play, Pause, SkipBack, SkipForward, Volume2 } from "lucide-react";
-import { usePlayer } from "@/stores/playerStore";
+import React, { useState, useRef } from 'react';
+import YouTubePlayer from './YouTubePlayer';
+import { Play, Pause, SkipForward, SkipBack, Volume2 } from 'lucide-react';
 
-export default function PlayerBar() {
-  const playerRef = useRef(null);
-  const { queue, index, setIndex, setQueue } = usePlayer();
+export default function PlayerBar({ currentSong }) {
+  const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.8);
-
-  const current = queue[index];
-
-  useEffect(() => {
-    if (playerRef.current) playerRef.current.setVolume(volume);
-  }, [volume]);
-
-  useEffect(() => {
-    if (!current) return;
-    // autoplay: the user must interact at least once in the session to allow audio in many browsers
-    setIsPlaying(true);
-  }, [current?.id]);
 
   const togglePlay = () => {
-    if (!playerRef.current) return;
-    if (isPlaying) {
-      playerRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      playerRef.current.play();
-      setIsPlaying(true);
-    }
-  };
-
-  const next = () => {
-    if (index + 1 < queue.length) setIndex(index + 1);
-  };
-  const prev = () => {
-    if (index > 0) setIndex(index - 1);
+    setIsPlaying(!isPlaying);
   };
 
   return (
-    <>
-      <div className="fixed bottom-0 left-64 right-0 bg-[#041018] border-t border-[#111] p-3 flex items-center gap-4 z-40">
-        <div className="flex items-center gap-3 w-1/3">
-          <div className="w-14 h-14 bg-[#222] rounded overflow-hidden">
-            {current?.thumbnail && <img src={current.thumbnail} alt={current.title} className="w-full h-full object-cover" />}
+    <div className="fixed bottom-0 left-0 right-0 h-24 bg-gray-900 border-t border-gray-800 flex items-center justify-between px-4">
+      {currentSong && (
+        <>
+          <div className="flex items-center gap-4">
+            <img
+              src={currentSong.cover_image}
+              alt={currentSong.title}
+              className="w-16 h-16 rounded"
+            />
+            <div>
+              <h4>{currentSong.title}</h4>
+              <p className="text-sm text-gray-400">{currentSong.artist}</p>
+            </div>
           </div>
-          <div>
-            <div className="font-semibold">{current?.title || "Nothing playing"}</div>
-            <div className="text-xs text-gray-400">{current?.channel}</div>
+          <div className="flex items-center gap-4">
+            <SkipBack />
+            <button onClick={togglePlay}>
+              {isPlaying ? <Pause /> : <Play />}
+            </button>
+            <SkipForward />
+            <Volume2 />
           </div>
-        </div>
-
-        <div className="flex-1 flex items-center justify-center gap-6">
-          <button onClick={prev}><SkipBack /></button>
-          <button onClick={togglePlay} className="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center">
-            {isPlaying ? <Pause /> : <Play />}
-          </button>
-          <button onClick={next}><SkipForward /></button>
-        </div>
-
-        <div className="flex items-center gap-3 w-1/3 justify-end">
-          <Volume2 />
-          <input type="range" min={0} max={1} step={0.01} value={volume} onChange={e => setVolume(Number(e.target.value))} />
-        </div>
-      </div>
-
-      <YouTubePlayer ref={playerRef} videoId={current?.id} onStateChange={(state) => {
-        // state: -1(unstarted),0(ended),1(playing),2(paused),3(buffering)
-        if (state === 0) {
-          // ended -> next
-          if (index + 1 < queue.length) setIndex(index + 1);
-        }
-      }} />
-    </>
+          <YouTubePlayer videoId={currentSong.youtubeId} isPlaying={isPlaying} />
+        </>
+      )}
+    </div>
   );
 }
