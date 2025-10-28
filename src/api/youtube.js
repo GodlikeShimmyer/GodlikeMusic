@@ -1,17 +1,15 @@
+// api/youtube.js
 import { searchYouTube } from "../lib/youtube.js";
 
 export default async function handler(req, res) {
   try {
-    const { q } = req.query;
+    const q = req.query.q || req.body?.q;
+    if (!q) return res.status(400).json({ error: "Missing q parameter" });
 
-    if (!q || q.trim() === "") {
-      return res.status(400).json({ error: "Missing query parameter ?q=" });
-    }
-
-    const results = await searchYouTube(q);
+    const results = await searchYouTube(q, 12);
     res.status(200).json(results);
   } catch (err) {
-    console.error("YouTube API error:", err);
-    res.status(500).json({ error: "Failed to fetch from YouTube API" });
+    console.error("api/youtube error:", err?.message || err);
+    res.status(500).json({ error: "YouTube proxy error" });
   }
 }
