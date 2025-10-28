@@ -9,23 +9,17 @@ export default function LikedSongs() {
     <div className="p-6 text-white">
       <h1 className="text-2xl font-bold mb-4">Liked Songs</h1>
       {liked.length === 0 ? (
-        <p>No liked songs yet.</p>
+        <p className="text-gray-400">You haven't liked any songs yet.</p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {liked.map((song) => (
-            <div
-              key={song.id}
-              className="bg-[#181818] p-3 rounded-lg hover:bg-[#222] transition"
-            >
-              <img src={song.thumbnail} alt={song.title} className="rounded-lg" />
-              <h2 className="mt-2 font-semibold text-sm">{song.title}</h2>
-              <p className="text-xs text-gray-400">{song.channel}</p>
-              <Button
-                onClick={() => toggleLike(song)}
-                className="mt-2 text-sm w-full"
-              >
-                💔 Unlike
-              </Button>
+          {liked.map(s => (
+            <div key={s.id} className="bg-[#111] p-3 rounded">
+              <img src={s.thumbnail} alt={s.title} className="rounded mb-2 w-full" />
+              <div className="font-semibold">{s.title}</div>
+              <div className="text-xs text-gray-400">{s.channel}</div>
+              <div className="flex gap-2 mt-2">
+                <Button onClick={() => toggleLike(s)}>💔 Unlike</Button>
+              </div>
             </div>
           ))}
         </div>
