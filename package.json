@@ -24,7 +24,7 @@
     "ffmpeg": "^0.0.4",
     "@types/express": "^4.17.17",
     "@types/multer": "^1.4.7",
-    "@types/ffmpeg": "^0.0.32"
+    "@types/ffmpeg": "^0.0.31"  // Updated to a valid version
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",
