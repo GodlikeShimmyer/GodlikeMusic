@@ -1,30 +1,37 @@
-import {
-  searchYouTube,
-  getTrendingMusic,
-  getChannelVideos,
-} from "../lib/youtube.js";
+// api/youtube.js
+import axios from "axios";
 
 export default async function handler(req, res) {
-  const { type, q, channelId } = req.query;
-
   try {
-    let data;
-    switch (type) {
-      case "search":
-        data = await searchYouTube(q);
-        break;
-      case "trending":
-        data = await getTrendingMusic();
-        break;
-      case "artist":
-        data = await getChannelVideos(channelId);
-        break;
-      default:
-        return res.status(400).json({ error: "Invalid request type" });
-    }
-    res.status(200).json(data);
+    const q = req.query.q;
+    if (!q) return res.status(400).json({ error: "Missing q" });
+
+    const KEY = process.env.YOUTUBE_API_KEY;
+    if (!KEY) return res.status(500).json({ error: "Missing YOUTUBE_API_KEY" });
+
+    const r = await axios.get("https://www.googleapis.com/youtube/v3/search", {
+      params: {
+        part: "snippet",
+        q,
+        maxResults: 24,
+        type: "video",
+        videoCategoryId: "10",
+        key: KEY
+      }
+    });
+
+    const items = (r.data.items || []).map(it => ({
+      id: it.id.videoId,
+      title: it.snippet.title,
+      thumbnail: it.snippet.thumbnails?.high?.url || it.snippet.thumbnails?.default?.url,
+      channel: it.snippet.channelTitle,
+      channelId: it.snippet.channelId,
+      description: it.snippet.description
+    }));
+
+    res.status(200).json(items);
   } catch (err) {
-    console.error("YouTube API error:", err);
-    res.status(500).json({ error: "YouTube API request failed" });
+    console.error("api/youtube error:", err?.message || err);
+    res.status(500).json({ error: "YouTube search failed" });
   }
 }
