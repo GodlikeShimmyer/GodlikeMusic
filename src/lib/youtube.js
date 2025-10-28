@@ -1,27 +1,29 @@
 import axios from "axios";
 
-const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
-const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
+const BASE_URL = "https://www.googleapis.com/youtube/v3";
 
-export async function getSpotifyToken() {
-  const tokenResponse = await axios.post(
-    "https://accounts.spotify.com/api/token",
-    new URLSearchParams({ grant_type: "client_credentials" }).toString(),
-    {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization:
-          "Basic " + Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64"),
-      },
-    }
-  );
-  return tokenResponse.data.access_token;
-}
+export async function searchYouTube(query, maxResults = 12) {
+  const apiKey = process.env.YOUTUBE_API_KEY;
 
-export async function getAlbum(albumId) {
-  const token = await getSpotifyToken();
-  const res = await axios.get(`https://api.spotify.com/v1/albums/${albumId}`, {
-    headers: { Authorization: `Bearer ${token}` },
+  if (!apiKey) {
+    throw new Error("Missing YOUTUBE_API_KEY environment variable");
+  }
+
+  const res = await axios.get(`${BASE_URL}/search`, {
+    params: {
+      part: "snippet",
+      q: query,
+      maxResults,
+      type: "video",
+      videoCategoryId: "10", // 10 = Music
+      key: apiKey,
+    },
   });
-  return res.data;
+
+  return res.data.items.map((item) => ({
+    id: item.id.videoId,
+    title: item.snippet.title,
+    thumbnail: item.snippet.thumbnails.medium.url,
+    channel: item.snippet.channelTitle,
+  }));
 }
