@@ -1,23 +1,25 @@
-import React, { useEffect, useRef } from 'react';
-import YouTube from 'react-youtube';
+import React, { forwardRef, useEffect } from 'react';
 
-export default function YouTubePlayer({ videoId, isPlaying }) {
-  const playerRef = useRef();
-
+const YouTubePlayer = forwardRef(({ videoId }, ref) => {
   useEffect(() => {
-    if (playerRef.current) {
-      if (isPlaying) playerRef.current.internalPlayer.playVideo();
-      else playerRef.current.internalPlayer.pauseVideo();
+    if (!videoId || !ref) return;
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = "https://www.youtube.com/iframe_api";
+      document.body.appendChild(tag);
     }
-  }, [isPlaying]);
 
-  return (
-    <div className="hidden">
-      <YouTube
-        videoId={videoId}
-        opts={{ playerVars: { autoplay: 0, controls: 0 } }}
-        ref={playerRef}
-      />
-    </div>
-  );
-}
+    window.onYouTubeIframeAPIReady = () => {
+      ref.current = new window.YT.Player('youtube-player', {
+        height: '0',
+        width: '0',
+        videoId,
+        events: { onReady: (e) => e.target.playVideo() },
+      });
+    };
+  }, [videoId]);
+
+  return <div id="youtube-player"></div>;
+});
+
+export default YouTubePlayer;
