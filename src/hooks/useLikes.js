@@ -1,22 +1,29 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export function useLikes() {
   const [liked, setLiked] = useState(() => {
-    const saved = localStorage.getItem("likedSongs");
-    return saved ? JSON.parse(saved) : [];
+    try {
+      if (typeof window === "undefined") return [];
+      const raw = localStorage.getItem("likedSongs");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
   });
 
   useEffect(() => {
-    localStorage.setItem("likedSongs", JSON.stringify(liked));
+    try {
+      localStorage.setItem("likedSongs", JSON.stringify(liked));
+    } catch {}
   }, [liked]);
 
-  function toggleLike(song) {
-    setLiked((prev) => {
-      const exists = prev.find((s) => s.id === song.id);
-      if (exists) return prev.filter((s) => s.id !== song.id);
-      return [...prev, song];
+  const toggleLike = (song) => {
+    setLiked(prev => {
+      const exists = prev.find(s => s.id === song.id);
+      const updated = exists ? prev.filter(s => s.id !== song.id) : [...prev, song];
+      return updated;
     });
-  }
+  };
 
   return { liked, toggleLike };
 }
