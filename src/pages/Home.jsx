@@ -1,44 +1,18 @@
-import React, { useState } from 'react';
+import React from "react";
+import { Card } from "@/components/ui/card";
 
-const Home = () => {
-  const [videoFile, setVideoFile] = useState(null);
-
-  const handleFileChange = (event) => {
-    setVideoFile(event.target.files[0]);
-  };
-
-  const convertAndPlayVideo = async () => {
-    if (!videoFile) return;
-
-    const formData = new FormData();
-    formData.append('video', videoFile);
-
-    try {
-      const response = await fetch('http://localhost:3000/api/convert', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const audio = new Audio(url);
-        audio.play();
-      } else {
-        console.error('Error converting video to MP3');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-
+export default function Home() {
   return (
-    <div>
-      <h1>Video to MP3 Converter</h1>
-      <input type="file" accept="video/*" onChange={handleFileChange} />
-      <button onClick={convertAndPlayVideo}>Convert and Play</button>
+    <div className="p-6 text-white">
+      <h1 className="text-3xl font-bold mb-6">Welcome to GodlikeMusic</h1>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[...Array(8)].map((_, i) => (
+          <Card key={i}>
+            <div className="h-32 bg-cyan-700 rounded-lg" />
+            <h2 className="mt-2 text-lg font-semibold">Demo Song {i + 1}</h2>
+          </Card>
+        ))}
+      </div>
     </div>
   );
-};
-
-export default Home;
+}
