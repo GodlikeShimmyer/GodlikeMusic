@@ -1,45 +1,53 @@
 import React, { useEffect, useState } from "react";
+import { getRecommendedSongs } from "@/lib/youtube";
 import { motion } from "framer-motion";
 
 export default function Home() {
-  const [trending, setTrending] = useState([]);
+  const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const load = async () => {
-      const res = await fetch("/api/youtube?type=trending");
-      const data = await res.json();
-      setTrending(data);
+    async function load() {
+      const data = await getRecommendedSongs();
+      setSongs(data);
       setLoading(false);
-    };
+    }
     load();
   }, []);
 
   return (
-    <div className="p-8 bg-gradient-to-b from-black to-gray-900 min-h-screen text-white">
-      <h1 className="text-4xl font-bold mb-6">Godlike Trending</h1>
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-6 text-white">Recommended for You</h1>
 
       {loading ? (
-        <p>Loading hot tracks...</p>
+        <p className="text-gray-400">Loading recommendations…</p>
       ) : (
-        <div className="grid md:grid-cols-3 gap-6">
-          {trending.map((video) => (
-            <motion.a
-              href={`https://youtube.com/watch?v=${video.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              key={video.id}
-              className="block bg-[#181818] rounded-lg p-3 hover:bg-[#222] transition"
-              whileHover={{ scale: 1.05 }}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {songs.map((song) => (
+            <motion.div
+              key={song.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-neutral-900 p-4 rounded-xl hover:bg-neutral-800 transition"
             >
               <img
-                src={video.thumbnail}
-                alt={video.title}
-                className="rounded-md"
+                src={song.thumbnail}
+                alt={song.title}
+                className="rounded-lg mb-3"
               />
-              <h3 className="mt-2 text-sm font-semibold">{video.title}</h3>
-              <p className="text-xs text-gray-400">{video.channel}</p>
-            </motion.a>
+              <h2 className="text-white font-semibold line-clamp-2">
+                {song.title}
+              </h2>
+              <p className="text-gray-400 text-sm mb-3">{song.artist}</p>
+              <a
+                href={song.url}
+                target="_blank"
+                rel="noreferrer"
+                className="bg-cyan-600 hover:bg-cyan-700 px-3 py-1 rounded text-white text-sm"
+              >
+                Play
+              </a>
+            </motion.div>
           ))}
         </div>
       )}
