@@ -1,55 +1,57 @@
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { searchYouTube } from "@/lib/youtube";
-import { useLikes } from "@/hooks/useLikes";
+import { usePlayer } from "@/stores/playerStore";
+import { Link } from "react-router-dom";
 
 export default function Search() {
-  const [query, setQuery] = useState("");
-  const { liked, toggleLike } = useLikes();
-  const { data, refetch, isFetching } = useQuery({
-    queryKey: ["search", query],
-    queryFn: () => searchYouTube(query),
-    enabled: false
-  });
+  const [q, setQ] = useState("");
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const { setQueue, setIndex, addToQueue } = usePlayer();
+
+  const doSearch = async (e) => {
+    e?.preventDefault();
+    if (!q) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/youtube?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      setResults(data);
+    } catch (err) {
+      console.error(err);
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const playNow = (idx) => {
+    setQueue(results);
+    setIndex(idx);
+  };
 
   return (
-    <div className="p-6 text-white">
-      <h1 className="text-2xl mb-4 font-bold">Search Songs</h1>
-      <div className="flex gap-2 mb-6">
-        <Input
-          placeholder="Search YouTube music..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <Button onClick={() => refetch()} disabled={isFetching}>
-          {isFetching ? "Loading..." : "Search"}
-        </Button>
-      </div>
+    <div className="p-6">
+      <form onSubmit={doSearch} className="flex gap-3 mb-6">
+        <Input value={q} onChange={e => setQ(e.target.value)} placeholder="Search YouTube music..." />
+        <Button type="submit">{loading ? "Searching..." : "Search"}</Button>
+      </form>
 
-      {data && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {data.map((song) => (
-            <div
-              key={song.id}
-              className="bg-[#181818] p-3 rounded-lg hover:bg-[#222] transition"
-            >
-              <img src={song.thumbnail} alt={song.title} className="rounded-lg" />
-              <h2 className="mt-2 font-semibold text-sm">{song.title}</h2>
-              <p className="text-xs text-gray-400">{song.channel}</p>
-              <Button
-                onClick={() => toggleLike(song)}
-                className="mt-2 text-sm w-full"
-              >
-                {liked.some((s) => s.id === song.id)
-                  ? "💚 Liked"
-                  : "🤍 Like"}
-              </Button>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {results.map((r, i) => (
+          <div key={r.id} className="bg-[#111] p-3 rounded">
+            <img src={r.thumbnail} alt={r.title} className="rounded mb-2 w-full" />
+            <div className="font-semibold text-sm">{r.title}</div>
+            <div className="text-xs text-gray-400">{r.channel}</div>
+            <div className="flex gap-2 mt-2">
+              <Button onClick={() => playNow(i)}>Play</Button>
+              <Button onClick={() => addToQueue(r)}>Add</Button>
+              <Link to={`/video/${r.id}`} className="px-3 py-1 text-sm rounded bg-[#222] hover:bg-[#2b2b2b]">Open</Link>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
