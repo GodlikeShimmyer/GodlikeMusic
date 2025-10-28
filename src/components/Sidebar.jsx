@@ -1,31 +1,32 @@
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Home, Search, Heart } from "lucide-react";
+import React from 'react';
+import { Home, Search, Library, Heart } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 
-const Sidebar = () => {
-  const { pathname } = useLocation();
-
-  const linkStyle = (path) =>
-    `flex items-center gap-3 px-4 py-2 rounded-lg transition-all ${
-      pathname === path ? "bg-[#282828]" : "hover:bg-[#1f1f1f]"
-    }`; // <-- Removed the extra "]" here
+export default function Sidebar() {
+  const navItems = [
+    { name: 'Home', icon: <Home />, path: '/' },
+    { name: 'Search', icon: <Search />, path: '/search' },
+    { name: 'Your Library', icon: <Library />, path: '/library' },
+    { name: 'Liked Songs', icon: <Heart />, path: '/likedsongs' },
+  ];
 
   return (
-    <div className="w-60 bg-black p-4 flex flex-col gap-2">
-      <Link to="/" className={linkStyle("/")}>
-        <Home size={20} />
-        <span>Home</span>
-      </Link>
-      <Link to="/search" className={linkStyle("/search")}>
-        <Search size={20} />
-        <span>Search</span>
-      </Link>
-      <Link to="/liked" className={linkStyle("/liked")}>
-        <Heart size={20} />
-        <span>Liked Songs</span>
-      </Link>
+    <div className="w-60 h-screen bg-gray-900 text-white flex flex-col p-4">
+      <h1 className="text-2xl font-bold mb-6">GodlikeMusic</h1>
+      {navItems.map((item) => (
+        <NavLink
+          key={item.name}
+          to={item.path}
+          className={({ isActive }) =>
+            `flex items-center gap-3 p-2 rounded hover:bg-gray-800 ${
+              isActive ? 'bg-gray-800' : ''
+            }`
+          }
+        >
+          {item.icon}
+          {item.name}
+        </NavLink>
+      ))}
     </div>
   );
-};
-
-export default Sidebar;
+}
