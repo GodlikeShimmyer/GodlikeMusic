@@ -1,34 +1,32 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
+import PlayerBar from './components/PlayerBar';
+
 import Home from './pages/Home';
-import Library from './pages/Library';
 import Album from './pages/Album';
 import Playlist from './pages/Playlist';
-import LikedSongs from './pages/LikedSongs';
 import Artist from './pages/Artist';
-import PlayerBar from './components/PlayerBar';
-import { mockSongs } from './data/mockSongs';
+import LikedSongs from './pages/LikedSongs';
 
 export default function App() {
-  const [currentSong, setCurrentSong] = useState(mockSongs[0]);
+  const [currentSong, setCurrentSong] = useState(null);
 
   return (
-    <Router>
-      <div className="flex">
-        <Sidebar />
-        <div className="flex-1 relative min-h-screen bg-gray-900">
+    <div className="flex h-screen bg-gray-900 text-white">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
           <Routes>
             <Route path="/" element={<Home setCurrentSong={setCurrentSong} />} />
-            <Route path="/library" element={<Library setCurrentSong={setCurrentSong} />} />
             <Route path="/album/:id" element={<Album setCurrentSong={setCurrentSong} />} />
             <Route path="/playlist/:id" element={<Playlist setCurrentSong={setCurrentSong} />} />
-            <Route path="/likedsongs" element={<LikedSongs setCurrentSong={setCurrentSong} />} />
             <Route path="/artist/:id" element={<Artist setCurrentSong={setCurrentSong} />} />
+            <Route path="/likedsongs" element={<LikedSongs setCurrentSong={setCurrentSong} />} />
           </Routes>
         </div>
-        <PlayerBar currentSong={currentSong} />
+        <PlayerBar currentSong={currentSong} setCurrentSong={setCurrentSong} />
       </div>
-    </Router>
+    </div>
   );
 }
