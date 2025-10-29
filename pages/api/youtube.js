@@ -1,5 +1,5 @@
 // pages/api/youtube.js
-import { fetchYouTubeData } from "@/api/fetchYouTube";
+import { fetchYouTube } from '../../api/fetchYouTube';
 
 export default async function handler(req, res) {
   const { q } = req.query;
